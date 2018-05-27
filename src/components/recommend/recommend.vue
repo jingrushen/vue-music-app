@@ -1,52 +1,75 @@
 <template>
-  <div class="recommend">
-    <div class="recommend-content">
-      <div class="slider-wrapper" v-if="hasRecommendList">
-        <slider>
-          <div v-for="item in recommendList" :key="item.id">
-            <a :href="item.linkUrl">
-              <img :src="item.picUrl">
-            </a>
+  <div class="recommend" ref="wrapper">
+    <div>
+      <div class="recommend-content">
+        <div class="slider" ref="slider">
+          <loading v-show="!hasRecommendList" :height='height'></loading>
+          <div class="slider-wrapper" v-if="hasRecommendList">
+            <slider>
+              <div v-for="item in recommendList" :key="item.id">
+                <a :href="item.linkUrl">
+                  <img :src="item.picUrl">
+                </a>
+              </div>
+            </slider>
           </div>
-        </slider>
-      </div>
-      <div class="recommend-list">
-        <h1 class="list-title">热门歌单推荐</h1>
-        <ul>
-          <li class="list-item" v-for="item in discList" :key="item.dissid">
-            <div class="item-icon">
-              <img class='item-img' :src="item.imgurl">
-            </div>
-            <div class="item-text">
-              <h2 class="text-title">{{item.creator.name}}</h2>
-              <p class="text-desc">{{item.dissname}}</p>
-            </div>
-          </li>
-        </ul>
+        </div>
+        <div class="recommend-list">
+          <h1 class="list-title">热门歌单推荐</h1>
+          <loading v-show="!hasDiscList"></loading>
+          <ul>
+            <li class="list-item" v-for="item in discList" :key="item.dissid">
+              <div class="item-icon">
+                <img class='item-img' :src="item.imgurl">
+              </div>
+              <div class="item-text">
+                <h2 class="text-title">{{item.creator.name}}</h2>
+                <p class="text-desc">{{item.dissname}}</p>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import BScroll from 'better-scroll'
 import Slider from 'base/slider/slider'
+import Loading from 'base/loading/loading'
 import { getRecommend, getDiscList } from 'api/recommend'
 import { ERR_OK } from 'api/config'
 export default {
   data () {
     return {
       recommendList: [],
-      discList: []
+      discList: [],
+      scroll,
+      firstImgLoad: false,
+      height: 0
     }
   },
   computed: {
     hasRecommendList () {
       return this.recommendList.length
+    },
+    hasDiscList () {
+      return this.discList.length
+    }
+  },
+  watch: {
+    discList () {
+      this.scroll.refresh()
     }
   },
   created () {
     this._getRecommend()
     this._getDiscList()
+  },
+  mounted () {
+    this.scroll = new BScroll(this.$refs.wrapper)
+    this.height = this.$refs.slider.offsetHeight
   },
   methods: {
     _getRecommend () {
@@ -67,7 +90,8 @@ export default {
     }
   },
   components: {
-    Slider
+    Slider,
+    Loading
   }
 }
 </script>
@@ -79,9 +103,15 @@ export default {
     width 100%
     top 88px
     bottom 0
+    overflow hidden
     .recommend-content
+      width 100%
       height 100%
       overflow hidden
+      .slider
+        width 100%
+        padding-bottom 40%
+        height 0
       .recommend-list
         .list-title
           height 65px
