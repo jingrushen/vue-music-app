@@ -1,7 +1,7 @@
 <template>
-  <div class="recommend" ref="wrapper">
-    <div>
-      <div class="recommend-content">
+  <div class="recommend">
+    <scroll class="recommend-content" :data='discList'>
+      <div>
         <div class="slider" ref="slider">
           <loading v-show="!hasRecommendList" :height='height'></loading>
           <div class="slider-wrapper" v-if="hasRecommendList">
@@ -20,7 +20,7 @@
           <ul>
             <li class="list-item" v-for="item in discList" :key="item.dissid">
               <div class="item-icon">
-                <img class='item-img' :src="item.imgurl">
+                <img class='item-img' v-lazy="item.imgurl">
               </div>
               <div class="item-text">
                 <h2 class="text-title">{{item.creator.name}}</h2>
@@ -30,12 +30,12 @@
           </ul>
         </div>
       </div>
-    </div>
+    </scroll>
   </div>
 </template>
 
 <script>
-import BScroll from 'better-scroll'
+import Scroll from 'base/scroll/scroll'
 import Slider from 'base/slider/slider'
 import Loading from 'base/loading/loading'
 import { getRecommend, getDiscList } from 'api/recommend'
@@ -45,7 +45,6 @@ export default {
     return {
       recommendList: [],
       discList: [],
-      scroll,
       firstImgLoad: false,
       height: 0
     }
@@ -58,17 +57,11 @@ export default {
       return this.discList.length
     }
   },
-  watch: {
-    discList () {
-      this.scroll.refresh()
-    }
-  },
   created () {
     this._getRecommend()
     this._getDiscList()
   },
   mounted () {
-    this.scroll = new BScroll(this.$refs.wrapper)
     this.height = this.$refs.slider.offsetHeight
   },
   methods: {
@@ -91,6 +84,7 @@ export default {
   },
   components: {
     Slider,
+    Scroll,
     Loading
   }
 }
