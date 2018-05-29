@@ -59,12 +59,12 @@ export default {
       let HotLen = 10
       data.forEach((item, index) => {
         if (index < HotLen) {
-          HotList.push(new Singer(item.id, item.name, item.img1v1Url))
+          HotList.push(new Singer(item.id, item.name, item.img1v1Url, item.picUrl))
         }
         if (!list[item.title]) {
           list[item.title] = []
         }
-        list[item.title].push(new Singer(item.id, item.name, item.img1v1Url))
+        list[item.title].push(new Singer(item.id, item.name, item.img1v1Url, item.picUrl))
       })
       let ret = Object.keys(list)
       ret.sort((a, b) => {

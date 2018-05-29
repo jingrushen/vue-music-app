@@ -1,22 +1,6 @@
 <template>
   <transition name='fade'>
-    <div class="music-list">
-      <div class="back-icon">
-        <i class="icon-back"></i>
-      </div>
-      <h1 class='title'>薛之谦</h1>
-      <div class="bg-image"></div>
-      <div class="list">
-        <div class="song-list">
-          <ul>
-            <li class="song-item">
-              <h2 class="item-name">哑巴</h2>
-              <p class="item-desc">薛之谦·哑巴</p>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    <music-list :singer='singer' :hot-songs='hotSongs'></music-list>
   </transition>
 </template>
 
@@ -24,8 +8,18 @@
 import { mapGetters } from 'vuex'
 
 import { getSingerDetail } from 'api/singer'
+import { CODE } from 'api/config'
+
+import { createSong } from 'base/class/Song'
+
+import MusicList from 'components/music-list/music-list'
 
 export default {
+  data () {
+    return {
+      hotSongs: []
+    }
+  },
   computed: {
     ...mapGetters([
       'singer'
@@ -42,9 +36,17 @@ export default {
         })
       }
       getSingerDetail(id).then((res) => {
-        console.log(res)
+        if (res.data.code === CODE) {
+          let hotSongs = res.data.hotSongs
+          hotSongs.forEach((song) => {
+            this.hotSongs.push(createSong(song))
+          })
+        }
       })
     }
+  },
+  components: {
+    MusicList
   }
 }
 </script>
@@ -55,12 +57,4 @@ export default {
     transition transform .3s
   .fade-enter, .fade-leave-to
     transform translate3d(100%, 0, 0)
-  .music-list
-    position fixed
-    top 0
-    right 0
-    left 0
-    bottom 0
-    background $color-background
-    z-index 99
 </style>
