@@ -22,9 +22,10 @@
       :probe-type='probeType'
       :data='hotSongs'
       @scroll='scroll'
+      v-show="hasHotSongs"
     >
       <div class="scroll-wrapper" v-show="hasHotSongs">
-        <song-list :hot-songs='hotSongs'></song-list>
+        <song-list :hot-songs='hotSongs' @select='selectSong'></song-list>
       </div>
       <div class="loading-container" v-show='!hasHotSongs'>
         <loading></loading>
@@ -37,6 +38,7 @@
 import Loading from 'base/loading/loading'
 import SongList from 'base/song-list/songlist'
 import Scroll from 'base/scroll/scroll'
+import { mapActions } from 'vuex'
 
 const TITLE_H = 40
 
@@ -110,7 +112,16 @@ export default {
         this.scrollMax = false
       }
       this.$refs.bglayer.style['transform'] = `translate3d(0, ${top}px, 0)`
-    }
+    },
+    selectSong (song, index) {
+      this.selectPlay({
+        list: this.hotSongs,
+        index
+      })
+    },
+    ...mapActions([
+      'selectPlay'
+    ])
   },
   components: {
     Loading,

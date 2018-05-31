@@ -1,7 +1,11 @@
 <template>
   <div class="song-list">
     <ul>
-      <li class='list-item' v-for="song in hotSongs" :key="song.id">
+      <li class='list-item'
+        v-for="(song, index) in hotSongs"
+        :key="song.id"
+        @click='selectSong(song, index)'
+      >
         <div class="content">
           <h2 class="item-name">{{song.name}}</h2>
           <p class="item-desc">{{mergeNameSinger(song)}}</p>
@@ -21,6 +25,9 @@ export default {
   methods: {
     mergeNameSinger (song) {
       return `${song.singer} ${song.desc}`
+    },
+    selectSong (song, index) {
+      this.$emit('select', song, index)
     }
   }
 }

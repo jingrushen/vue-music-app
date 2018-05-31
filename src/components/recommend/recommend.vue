@@ -18,13 +18,13 @@
           <h1 class="list-title">热门歌单推荐</h1>
           <loading v-show="!hasDiscList"></loading>
           <ul>
-            <li class="list-item" v-for="item in discList" :key="item.dissid">
+            <li class="list-item" v-for="item in discList" :key="item.id">
               <div class="item-icon">
-                <img class='item-img' v-lazy="item.imgurl">
+                <img class='item-img' v-lazy="item.picUrl">
               </div>
               <div class="item-text">
-                <h2 class="text-title">{{item.creator.name}}</h2>
-                <p class="text-desc">{{item.dissname}}</p>
+                <h2 class="text-title">{{item.name}}</h2>
+                <p class="text-desc">{{item.copywriter}}</p>
               </div>
             </li>
           </ul>
@@ -39,7 +39,7 @@ import Scroll from 'base/scroll/scroll'
 import Slider from 'base/slider/slider'
 import Loading from 'base/loading/loading'
 import { getRecommend, getDiscList } from 'api/recommend'
-import { ERR_OK } from 'api/config'
+import { ERR_OK, CODE } from 'api/config'
 export default {
   data () {
     return {
@@ -75,9 +75,8 @@ export default {
     _getDiscList () {
       getDiscList().then((res) => {
         res = res.data
-        if (res.code === ERR_OK) {
-          const data = res.data
-          this.discList = data.list
+        if (res.code === CODE) {
+          this.discList = res.result
         }
       })
     }
