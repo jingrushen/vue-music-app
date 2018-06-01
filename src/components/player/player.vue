@@ -13,21 +13,48 @@
           <h2 class="top-subtitle">{{currentSong.singer}}</h2>
         </div>
         <div class="middle">
-          <div class="middle-l">
-            <div class="cd-wrapper">
-              <div class="cd" :class="hasCdRotate">
-                <img :src="currentSong.img" alt="" class="image">
+          <transition name="bgshow" mode="out-in">
+            <div class="middle-l" v-if="hasCd" @click='changeBg' key="left">
+              <div class="cd-wrapper">
+                <div class="cd" :class="hasCdRotate">
+                  <img :src="currentSong.img" alt="" class="image">
+                </div>
               </div>
             </div>
-          </div>
+            <scroll class="middle-r needsclick" v-else
+              key="right"
+              :data='currentLyric'
+              ref="lyricScroll"
+              :click='click'
+              @clickBg='changeBg'
+            >
+              <div class="lyric-wrapper" ref="lyricWrapper">
+                <div v-if="hasLyirc">
+                  <p class="lyric-text"
+                    v-for="(item, index) in currentLyric"
+                    :key="index"
+                    :class='{"current":index === currLyric}'
+                    ref="lyricLines"
+                    @touchstart='scrollTouchStart'
+                    @touchmove='scrollTouchMove'
+                    @touchend='scrollTouchEnd'
+                  >{{item.txt}}</p>
+                </div>
+              </div>
+            </scroll>
+          </transition>
         </div>
         <div class="bottom">
-          <span class="time time-l">{{format(currentTime)}}</span>
-          <div class="progress-wrapper"></div>
-          <span class="time time-r">{{format(currentSong.interval / 1000)}}</span>
+          <div class="progress-wrapper">
+            <span class="time time-l">{{format(currentTime)}}</span>
+            <div class="progress-bar-wrapper">
+              <progress-bar :percent='percent' @setPercent='setPercent'></progress-bar>
+            </div>
+            <span class="time time-r">{{format(currentSong.interval)}}</span>
+          </div>
           <div class="operators">
             <div class="icon i-left">
-              <i class="icon-sequence"></i>
+              <i :class="iconMode" class="icon" @click='changeMode'></i>
             </div>
             <div class="icon i-left">
               <i class="icon-prev" @click='prev'></i>
@@ -57,7 +84,9 @@
           <p class="song-desc">{{currentSong.singer}}</p>
         </div>
         <div class="control">
-          <i class="icon-mini" :class="miniIcon" @click.stop='toggleState'></i>
+          <progress-circle class='progress-circle' :radius='radius' :percent='percent'>
+            <i class="icon-mini icon-operate" :class="miniIcon" @click.stop='toggleState'></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-mini icon-playlist"></i>
@@ -68,20 +97,35 @@
       @canplay='ready'
       @error='error'
       @timeupdate="updateTime"
+      @ended="end"
     ></audio>
   </div>
 </template>
 
 <script>
 import { mapGetters, mapMutations } from 'vuex'
-import { getSongUrl } from 'api/song'
+import { getSongUrl, getSongLyric } from 'api/song'
 import { CODE } from 'api/config'
+import { playMode } from 'common/js/config'
+import { shuffle, lyricParse } from 'common/js/util'
+import ProgressBar from 'base/progressbar/progressbar'
+import ProgressCircle from 'base/progresscircle/progresscircle'
+import Scroll from 'base/scroll/scroll'
+
+const HEIGHT = window.innerHeight / 2 | 0
 
 export default {
   data () {
     return {
       songReady: false,
-      currentTime: 0
+      currentTime: 0,
+      radius: 32,
+      currentLyric: [],
+      currLyric: -1,
+      hasCd: true,
+      click: true,
+      isMove: false,
+      timer: null
     }
   },
   computed: {
@@ -90,7 +134,9 @@ export default {
       'fullScreen',
       'currentSong',
       'playing',
-      'currentIndex'
+      'currentIndex',
+      'mode',
+      'sequenceList'
     ]),
     hasPlayList () {
       return !!this.playList.length
@@ -103,14 +149,27 @@ export default {
     },
     hasCdRotate () {
       return this.playing ? 'play' : 'play pause'
+    },
+    percent () {
+      return this.currentTime / (this.currentSong.interval)
+    },
+    iconMode () {
+      return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+    },
+    hasLyirc () {
+      return !!this.currentLyric.length
     }
   },
   watch: {
-    currentSong (song) {
-      if (!song && song.url) {
+    currentSong (newsong, oldsong) {
+      if (newsong.id === oldsong.id) {
         return
       }
-      this._getSongUrl(song.id)
+      if (!newsong && newsong.url) {
+        return
+      }
+      this._getSongUrl(newsong.id)
+      this._getSongLyric(newsong.id)
     },
     playing (state) {
       const audio = this.$refs.audio
@@ -161,6 +220,19 @@ export default {
         }
       })
     },
+    _getSongLyric (id) {
+      getSongLyric(id).then((res) => {
+        if (res.data.code === CODE) {
+          let lrc = res.data.lrc.lyric
+          this.currentSong.lrc = lrc
+          this.currentLyric = lyricParse(lrc)
+          this.currentLyric.push({
+            time: this.currentSong.interval * 1000,
+            txt: null
+          })
+        }
+      })
+    },
     audioPlay () {
       this.$refs.audio.src = this.currentSong.url
       this.$refs.audio.play()
@@ -175,7 +247,9 @@ export default {
 
     },
     updateTime (e) {
-      this.currentTime = e.target.currentTime
+      let time = e.target.currentTime
+      this.currentTime = time
+      this.getCurrentLyric(time)
     },
     format (time) {
       let interval = time | 0
@@ -189,11 +263,84 @@ export default {
       }
       return num
     },
+    setPercent (p) {
+      const currentTime = (this.currentSong.interval) * p
+      this.currentTime = this.$refs.audio.currentTime = currentTime
+    },
+    changeMode () {
+      let mode = (this.mode + 1) % 3
+      let list = null
+      this.setMode(mode)
+      if (mode === playMode.random) {
+        list = shuffle(this.sequenceList)
+      } else {
+        list = this.sequenceList
+      }
+      this.resetCurrentIndex(list)
+      this.setList(list)
+    },
+    resetCurrentIndex (list) {
+      let index = list.findIndex((item) => {
+        return item.id === this.currentSong.id
+      })
+      this.setCurrIndex(index)
+    },
+    end () {
+      if (this.mode === playMode.loop) {
+        this.$refs.audio.currentTime = 0
+        this.$refs.audio.play()
+      } else {
+        this.next()
+      }
+    },
+    getCurrentLyric (time) {
+      let t = time * 1000
+      let len = this.currentLyric.length
+      for (let i = 0; i < len - 1; i++) {
+        if (this.currentLyric[i].time < t && t < this.currentLyric[i + 1].time) {
+          this.currLyric = i
+          if (this.$refs.lyricLines) {
+            let el = this.$refs.lyricLines[i]
+            if (el && !this.isMove) {
+              this.$refs.lyricScroll.scrollToElement(el, 500)
+              return
+            }
+          }
+        }
+      }
+    },
+    changeBg () {
+      this.hasCd = !this.hasCd
+      if (!this.hasCd) {
+        this.$nextTick(() => {
+          this.$refs.lyricWrapper.clientHeight += HEIGHT
+        })
+      }
+    },
+    scrollTouchStart (e) {
+      this.isMove = true
+    },
+    scrollTouchMove (e) {
+      clearTimeout(this.timer)
+      this.isMove = true
+    },
+    scrollTouchEnd (e) {
+      this.timer = setTimeout(() => {
+        this.isMove = false
+      }, 2000)
+    },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
       setPlayState: 'SET_PLAYING_STATE',
-      setCurrIndex: 'SET_CURR_INDEX'
+      setCurrIndex: 'SET_CURR_INDEX',
+      setMode: 'SET_PLAY_MODE',
+      setList: 'SET_PLAYLIST'
     })
+  },
+  components: {
+    ProgressBar,
+    ProgressCircle,
+    Scroll
   }
 }
 </script>
@@ -247,11 +394,16 @@ export default {
           padding 0 10px
           no-wrap()
       .middle
+        position absolute
+        width 100%
+        top 80px
+        bottom 170px
+        overflow hidden
         .middle-l
+          position absolute
           width 100%
           padding-bottom 80%
           height 0
-          position relative
           .cd-wrapper
             width 80%
             position absolute
@@ -268,10 +420,49 @@ export default {
                 box-sizing border-box
                 border-radius 50%
                 border 10px solid hsla(0,0%,100%,.1)
+        .middle-r
+          position absolute
+          left 0
+          top 50%
+          right 0
+          bottom 0
+          .lyric-wrapper
+            width 80%
+            text-align center
+            margin 0 auto
+            overflow hidden
+            .lyric-text
+              line-height 32px
+              color $color-text-l
+              font-size $font-size-medium
+              transition all .3s
+              &.current
+                transform scale(1.3)
+                color $color-theme
       .bottom
         width 100%
         bottom 50px
         position absolute
+        .progress-wrapper
+          display flex
+          justify-content space-between
+          width 80%
+          margin 0 auto
+          padding 10px 0
+          .time
+            color $color-text
+            flex 0 0 30px
+            font-size $font-size-small
+            line-height 30px
+            &.time-l
+              text-align left
+            &.time-r
+              text-align right
+          .progress-bar-wrapper
+            flex 1
+            height 30px
+            display flex
+            align-items center
         .operators
           display flex
           align-items center
@@ -344,6 +535,15 @@ export default {
         .icon-mini
           font-size 32px
           color $color-theme-d
+          &.icon-operate
+            position absolute
+            left 0
+            top 0
+.bgshow-enter-active, &.bgshow-leave-active
+  transition all .3s
+.bgshow-enter, .bgshow-leave-to
+  opacity 0
+
   @keyframes rotate {
     0% {
       transform rotate(0)

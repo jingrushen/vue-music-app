@@ -10,7 +10,7 @@
     >
       <div class="filter" ref="filter"></div>
       <div class="play-wrapper" ref="play">
-        <div class="play">
+        <div class="play" @click='selectRandom'>
           <i class="icon-play"></i>
           <span class="play-text">随机播放全部</span>
         </div>
@@ -119,8 +119,14 @@ export default {
         index
       })
     },
+    selectRandom (song) {
+      this.selectRandom({
+        list: this.hotSongs
+      })
+    },
     ...mapActions([
-      'selectPlay'
+      'selectPlay',
+      'selectRandom'
     ])
   },
   components: {

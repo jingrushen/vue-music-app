@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapper">
+  <div ref="wrapper" @click='test'>
     <slot></slot>
   </div>
 </template>
@@ -42,8 +42,13 @@ export default {
         })
       }
     },
-    scrollToElement (ele) {
-      this.scroll.scrollToElement(ele)
+    scrollToElement (ele, time) {
+      this.scroll.scrollToElement(ele, time)
+    },
+    test () {
+      if (this.click) {
+        this.$emit('clickBg')
+      }
     }
   },
   watch: {

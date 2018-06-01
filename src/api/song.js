@@ -14,7 +14,7 @@ export function getSongUrl (id) {
 }
 
 export function getSongLyric (id) {
-  let url = `${HOST}/lyric?${id}`
+  let url = `${HOST}/lyric?id=${id}`
 
   return axios.get(url)
 }
