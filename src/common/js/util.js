@@ -3,6 +3,7 @@ export function getRandamInt (min, max) {
 }
 
 export function shuffle (_arr) {
+  console.log(_arr)
   let arr = _arr.slice()
   let len = arr.length
   for (let i = 0; i < len; i++) {

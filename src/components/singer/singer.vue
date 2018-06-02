@@ -1,6 +1,6 @@
 <template>
-  <div class="singer">
-    <list-view :singerList='singerList' :ret='ret' @select='selectItem'></list-view>
+  <div class="singer" ref="singer">
+    <list-view :singerList='singerList' :ret='ret' @select='selectItem' ref="list"></list-view>
     <router-view></router-view>
   </div>
 </template>
@@ -16,8 +16,10 @@ import { getSingerList } from 'api/singer'
 import { CODE } from 'api/config'
 
 import pinyin from 'pinyin'
+import { playlistMixin } from 'common/js/mixin'
 
 export default {
+  mixins: [playlistMixin],
   data () {
     return {
       singerList: [],
@@ -88,6 +90,11 @@ export default {
         path: `/singer/${item.id}`
       })
       this.setItem(item)
+    },
+    handlePlaylist (playlist) {
+      const bottom = playlist.length > 0 ? '60px' : ''
+      this.$refs.singer.style.bottom = bottom
+      this.$refs.list.refresh()
     },
     ...mapMutations({
       setItem: 'SET_SINGER'

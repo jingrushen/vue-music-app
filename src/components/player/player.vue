@@ -12,7 +12,7 @@
           <h1 class="top-title">{{currentSong.name}}</h1>
           <h2 class="top-subtitle">{{currentSong.singer}}</h2>
         </div>
-        <div class="middle">
+        <div class="middle needsclick">
           <transition name="bgshow" mode="out-in">
             <div class="middle-l" v-if="hasCd" @click='changeBg' key="left">
               <div class="cd-wrapper">
@@ -21,7 +21,7 @@
                 </div>
               </div>
             </div>
-            <scroll class="middle-r needsclick" v-else
+            <scroll class="middle-r" v-else
               key="right"
               :data='currentLyric'
               ref="lyricScroll"
@@ -60,7 +60,7 @@
               <i class="icon-prev" @click='prev'></i>
             </div>
             <div class="icon i-center">
-              <i :class="normalIcon" @click='toggleState'></i>
+              <i :class="normalIcon" @click='toggleState' @touchstart.once='firstplay'></i>
             </div>
             <div class="icon i-right">
               <i class="icon-next" @click='next'></i>
@@ -112,8 +112,6 @@ import ProgressBar from 'base/progressbar/progressbar'
 import ProgressCircle from 'base/progresscircle/progresscircle'
 import Scroll from 'base/scroll/scroll'
 
-const HEIGHT = window.innerHeight / 2 | 0
-
 export default {
   data () {
     return {
@@ -125,7 +123,9 @@ export default {
       hasCd: true,
       click: true,
       isMove: false,
-      timer: null
+      timer: null,
+      isFirstPlayed: false,
+      isStartLyric: false
     }
   },
   computed: {
@@ -162,14 +162,15 @@ export default {
   },
   watch: {
     currentSong (newsong, oldsong) {
-      if (newsong.id === oldsong.id) {
+      if (!newsong && newsong.url) {
         return
       }
-      if (!newsong && newsong.url) {
+      if (newsong.id === oldsong.id) {
         return
       }
       this._getSongUrl(newsong.id)
       this._getSongLyric(newsong.id)
+      this.isStartLyric = false
     },
     playing (state) {
       const audio = this.$refs.audio
@@ -222,7 +223,10 @@ export default {
     },
     _getSongLyric (id) {
       getSongLyric(id).then((res) => {
-        if (res.data.code === CODE) {
+        if (res.data.nolyric) {
+          this.currentSong.lrc = ['没有歌词匹配']
+          this.currentLyric = ['没有歌词匹配']
+        } else if (res.data.code === CODE) {
           let lrc = res.data.lrc.lyric
           this.currentSong.lrc = lrc
           this.currentLyric = lyricParse(lrc)
@@ -235,9 +239,15 @@ export default {
     },
     audioPlay () {
       this.$refs.audio.src = this.currentSong.url
-      this.$refs.audio.play()
+      if (this.playing) {
+        this.$refs.audio.play()
+      }
     },
     toggleState () {
+      if (!this.isFirstPlayed) {
+        this.isFirstPlayed = true
+        return
+      }
       this.setPlayState(!this.playing)
     },
     ready () {
@@ -300,6 +310,11 @@ export default {
         if (this.currentLyric[i].time < t && t < this.currentLyric[i + 1].time) {
           this.currLyric = i
           if (this.$refs.lyricLines) {
+            if (!this.isStartLyric) {
+              this.$refs.lyricScroll.scrollTo(0, 0)
+              this.isStartLyric = true
+              return
+            }
             let el = this.$refs.lyricLines[i]
             if (el && !this.isMove) {
               this.$refs.lyricScroll.scrollToElement(el, 500)
@@ -311,11 +326,6 @@ export default {
     },
     changeBg () {
       this.hasCd = !this.hasCd
-      if (!this.hasCd) {
-        this.$nextTick(() => {
-          this.$refs.lyricWrapper.clientHeight += HEIGHT
-        })
-      }
     },
     scrollTouchStart (e) {
       this.isMove = true
@@ -328,6 +338,10 @@ export default {
       this.timer = setTimeout(() => {
         this.isMove = false
       }, 2000)
+    },
+    firstplay () {
+      this.setPlayState(true)
+      this.$refs.audio.play()
     },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',

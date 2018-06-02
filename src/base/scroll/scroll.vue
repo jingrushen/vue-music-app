@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapper" @click='test'>
+  <div ref="wrapper" @click='changebg'>
     <slot></slot>
   </div>
 </template>
@@ -14,7 +14,7 @@ export default {
     },
     click: {
       type: Boolean,
-      default: false
+      default: true
     },
     data: {
       type: Array,
@@ -23,44 +23,72 @@ export default {
     listenScroll: {
       type: Boolean,
       default: false
+    },
+    pullup: {
+      type: Boolean,
+      default: false
+    },
+    refreshDelay: {
+      type: Number,
+      default: 20
     }
   },
   mounted () {
-    this.$nextTick(() => {
+    setTimeout(() => {
       this._initScroll()
     })
   },
   methods: {
     _initScroll () {
+      if (!this.$refs.wrapper) {
+        return
+      }
       this.scroll = new BScroll(this.$refs.wrapper, {
         probeType: this.probeType,
         click: this.click
       })
       if (this.listenScroll) {
+        let _this = this
         this.scroll.on('scroll', (pos) => {
-          this.$emit('scroll', pos)
+          _this.$emit('scroll', pos)
+        })
+      }
+      if (this.pullup) {
+        this.scroll.on('scrollEnd', () => {
+          if (this.scroll.y <= (this.scroll.maxScrollY + 50)) {
+            this.$emit('scrollToEnd')
+          }
         })
       }
     },
-    scrollToElement (ele, time) {
-      this.scroll.scrollToElement(ele, time)
+    enable () {
+      this.scroll && this.scroll.enable()
     },
-    test () {
-      if (this.click) {
-        this.$emit('clickBg')
-      }
+    disable () {
+      this.scroll && this.scroll.disable()
+    },
+    refresh () {
+      this.scroll && this.scroll.refresh()
+    },
+    scrollTo () {
+      this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments)
+    },
+    scrollToElement () {
+      this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments)
+    },
+    changebg () {
+      this.$emit('clickBg')
     }
   },
   watch: {
     data () {
-      this.$nextTick(() => {
-        this.scroll.refresh()
-      })
+      setTimeout(() => {
+        this.refresh()
+      }, this.refreshDelay)
     }
   }
 }
 </script>
 
-<style lang='stylus' scoped>
-
+<style>
 </style>

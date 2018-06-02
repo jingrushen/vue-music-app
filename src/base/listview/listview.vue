@@ -156,6 +156,9 @@ export default {
         let h = list[i].offsetHeight + this.listHeight[i]
         this.listHeight.push(h)
       }
+    },
+    refresh () {
+      this.$refs.scroll.refresh()
     }
   },
   components: {

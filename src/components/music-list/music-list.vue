@@ -3,14 +3,14 @@
     <div class="back" @click='goBack'>
       <i class="icon-back"></i>
     </div>
-    <h1 class="title">{{this.singer.name}}</h1>
+    <h1 class="title">{{this.info.name}}</h1>
     <loading v-show="!hasImage" :height='imgH'></loading>
     <div class="bg-image" :style='bgStyle' ref="bgImg"
       :class='scrollMax ? "bg-image-after" : "bg-image-before"'
     >
       <div class="filter" ref="filter"></div>
       <div class="play-wrapper" ref="play">
-        <div class="play" @click='selectRandom'>
+        <div class="play" @click='randomPlay'>
           <i class="icon-play"></i>
           <span class="play-text">随机播放全部</span>
         </div>
@@ -39,10 +39,12 @@ import Loading from 'base/loading/loading'
 import SongList from 'base/song-list/songlist'
 import Scroll from 'base/scroll/scroll'
 import { mapActions } from 'vuex'
+import { playlistMixin } from 'common/js/mixin'
 
 const TITLE_H = 40
 
 export default {
+  mixins: [playlistMixin],
   data () {
     return {
       bgStyle: '',
@@ -54,8 +56,11 @@ export default {
     }
   },
   props: {
-    singer: {
-      type: Object
+    info: {
+      type: Object,
+      default: function () {
+        return {}
+      }
     },
     hotSongs: {
       type: Array
@@ -67,7 +72,7 @@ export default {
     }
   },
   created () {
-    this.loadImage(this.singer.bgimage)
+    this.loadImage(this.info.bgimage)
   },
   mounted () {
     this.hasImage = false
@@ -86,9 +91,7 @@ export default {
       }
     },
     goBack () {
-      this.$router.push({
-        path: '/singer'
-      })
+      this.$router.back()
     },
     scroll (pos) {
       let top = Math.max(this.maxScroll, pos.y)
@@ -119,10 +122,15 @@ export default {
         index
       })
     },
-    selectRandom (song) {
+    randomPlay () {
       this.selectRandom({
         list: this.hotSongs
       })
+    },
+    handlePlaylist (playlist) {
+      let bottom = playlist.length > 0 ? '60px' : ''
+      this.$refs.scroll.$el.style.bottom = bottom
+      this.$refs.scroll.refresh()
     },
     ...mapActions([
       'selectPlay',

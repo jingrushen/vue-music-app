@@ -20,7 +20,7 @@ const actions = {
     commit(types.SET_SEQUENCE_LIST, list)
     commit(types.SET_CURR_INDEX, index)
     commit(types.SET_FULL_SCREEN, true)
-    commit(types.SET_PLAYING_STATE, true)
+    commit(types.SET_PLAYING_STATE, false)
   },
   selectRandom ({commit}, {list}) {
     commit(types.SET_PLAY_MODE, playMode.random)
@@ -29,7 +29,7 @@ const actions = {
     commit(types.SET_PLAYLIST, randomList)
     commit(types.SET_CURR_INDEX, 0)
     commit(types.SET_FULL_SCREEN, true)
-    commit(types.SET_PLAYING_STATE, true)
+    commit(types.SET_PLAYING_STATE, false)
   }
 }
 

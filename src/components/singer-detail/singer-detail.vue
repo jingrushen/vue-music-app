@@ -1,6 +1,6 @@
 <template>
   <transition name='fade'>
-    <music-list :singer='singer' :hot-songs='hotSongs'></music-list>
+    <music-list :info='singer' :hot-songs='hotSongs'></music-list>
   </transition>
 </template>
 
