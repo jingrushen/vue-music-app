@@ -2,6 +2,12 @@ import { param } from 'common/js/normalize'
 import { HOST } from './host'
 import axios from 'axios'
 
+export function getSongDetail (id) {
+  const url = `${HOST}/song/detail?ids=${id}`
+
+  return axios.get(url)
+}
+
 export function getSongUrl (id) {
   let url = `${HOST}/music/url`
 

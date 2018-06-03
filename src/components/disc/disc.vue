@@ -1,19 +1,19 @@
 <template>
-  <music-list :hotSongs='songs' :info='info' v-if="hasInfo"></music-list>
-  <!-- <div>gedan</div> -->
+  <transition name="fade">
+    <music-list :hotSongs='this.info.songs' :info='info' v-if="hasInfo"></music-list>
+  </transition>
 </template>
 
 <script>
 import MusicList from 'components/music-list/music-list'
-import { getRecommendDisc } from 'api/recommend'
+import { getPlaylistDisc } from 'api/playlist'
 import { mapGetters } from 'vuex'
 import { CODE } from 'api/config'
-import { Disc } from 'base/class/Disc'
+import Disc from 'base/class/Disc'
 
 export default {
   data () {
     return {
-      songs: [],
       info: ''
     }
   },
@@ -26,20 +26,19 @@ export default {
     ])
   },
   created () {
-    this._getRecommendDisc(this.disc.id)
+    this._getPlaylistDisc(this.disc.id)
   },
   methods: {
-    _getRecommendDisc (id) {
+    _getPlaylistDisc (id) {
       if (!id) {
         this.$router.push({
           path: '/recommend'
         })
       }
-      getRecommendDisc(id).then((res) => {
+      getPlaylistDisc(id).then((res) => {
         if (res.data.code === CODE) {
           const data = res.data.playlist
           this.info = new Disc(data)
-          this.songs = this.info.getSong()
         }
       })
     }
@@ -52,4 +51,8 @@ export default {
 
 <style lang='stylus' scoped>
 @import '~common/stylus/variable'
+  .fade-enter-active, .fade-leave-active
+    transition transform .3s
+  .fade-enter, .fade-leave-to
+    transform translate3d(100%, 0, 0)
 </style>

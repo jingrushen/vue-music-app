@@ -170,7 +170,7 @@ export default {
       }
       this._getSongUrl(newsong.id)
       this._getSongLyric(newsong.id)
-      this.isStartLyric = false
+      this.reset()
     },
     playing (state) {
       const audio = this.$refs.audio
@@ -178,6 +178,13 @@ export default {
     }
   },
   methods: {
+    reset () {
+      this.isStartLyric = false
+      this.currentTime = 0
+      if (this.$refs.lyricScroll) {
+        this.$refs.lyricScroll.scrollTo(0, 0)
+      }
+    },
     close () {
       this.setFullScreen(false)
     },
@@ -216,16 +223,21 @@ export default {
       getSongUrl(id).then((res) => {
         if (res.data.code === CODE) {
           let url = res.data.data[0].url
-          this.currentSong.url = url
-          this.audioPlay()
+          console.log(url)
+          if (url === null) {
+            this.next()
+          } else {
+            this.currentSong.url = url
+            this.audioPlay()
+          }
         }
       })
     },
     _getSongLyric (id) {
       getSongLyric(id).then((res) => {
         if (res.data.nolyric) {
-          this.currentSong.lrc = ['没有歌词匹配']
-          this.currentLyric = ['没有歌词匹配']
+          this.currentSong.lrc = [ {txt: '没有歌词匹配'} ]
+          this.currentLyric = [ {txt: '没有歌词匹配'} ]
         } else if (res.data.code === CODE) {
           let lrc = res.data.lrc.lyric
           this.currentSong.lrc = lrc
@@ -297,7 +309,7 @@ export default {
     },
     end () {
       if (this.mode === playMode.loop) {
-        this.$refs.audio.currentTime = 0
+        this.reset()
         this.$refs.audio.play()
       } else {
         this.next()

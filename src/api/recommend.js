@@ -25,9 +25,3 @@ export function getDiscList () {
 
   return axios.get(url)
 }
-
-export function getRecommendDisc (id) {
-  let url = `${HOST}/playlist/detail?id=${id}`
-
-  return axios.get(url)
-}

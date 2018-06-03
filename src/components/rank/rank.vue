@@ -7,7 +7,7 @@
             <img v-lazy="item.bgimage" alt="">
           </div>
           <ul class="item-rank">
-            <li class="item-rank-list" v-for="(song, index) in item.showSong" :key="index" v-if="index < 3">
+            <li class="item-rank-list" v-for="(song, index) in item.songs" :key="index" v-if="index < 3">
               <span>{{index + 1}}.</span>
               <span>{{song.name}}</span>
             </li>
@@ -22,7 +22,7 @@
 <script>
 import { getRankList } from 'api/rank'
 import { CODE } from 'api/config'
-import { Disc } from 'base/class/Disc'
+import Disc from 'base/class/Disc'
 import Scroll from 'base/scroll/scroll'
 import { mapMutations } from 'vuex'
 import { playlistMixin } from 'common/js/mixin'
@@ -45,9 +45,7 @@ export default {
         getRankList(i).then((res) => {
           if (res.data.code === CODE) {
             const data = res.data.playlist
-            let obj = new Disc(data)
-            obj.showSong = obj.getSong()
-            this.rankList.push(obj)
+            this.rankList.push(new Disc(data))
           }
         })
         i++

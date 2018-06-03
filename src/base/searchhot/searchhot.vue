@@ -2,7 +2,7 @@
   <div class="search-hot">
     <h1 class="title">热门搜索</h1>
     <ul class="hot-key">
-      <li class="key" v-for="(item, index) in keys" :key="index">
+      <li class="key" v-for="(item, index) in keys" :key="index" @click='clickKey(item.first)'>
         <span>{{item.first}}</span>
       </li>
     </ul>
@@ -14,6 +14,11 @@ export default {
   props: {
     keys: {
       type: Array
+    }
+  },
+  methods: {
+    clickKey (val) {
+      this.$emit('clickHotkey', val)
     }
   }
 }

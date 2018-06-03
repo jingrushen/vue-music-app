@@ -2,18 +2,20 @@ import { createSong } from './Song'
 
 // const showSongNUM = 3
 
-export class Disc {
+export default class Disc {
   constructor ({id, playCount, name, coverImgUrl, tracks}) {
     this.id = id
     this.playCount = playCount
     this.name = name
     this.bgimage = coverImgUrl
-    this.tracks = tracks
+    if (tracks) {
+      this.songs = this.getSong(tracks)
+    }
   }
 
-  getSong () {
+  getSong (tracks) {
     let songs = []
-    this.tracks.forEach((item, index) => {
+    tracks.forEach((item) => {
       songs.push(createSong(item))
     })
     return songs

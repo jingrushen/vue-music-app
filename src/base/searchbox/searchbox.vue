@@ -19,12 +19,20 @@ export default {
       query: ''
     }
   },
+  watch: {
+    query (val) {
+      this.$emit('changeQuery', val)
+    }
+  },
   computed: {
     hasQuery () {
       return !!this.query
     }
   },
   methods: {
+    setQuery (val) {
+      this.query = val
+    },
     clear () {
       this.query = ''
     }
