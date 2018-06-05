@@ -60,6 +60,7 @@ export default {
   right 0
   bottom 0
   background $color-background-d
+  z-index 1000
   &.fade-enter-active
     animation: confirm-fadein .3s
     .comfirm

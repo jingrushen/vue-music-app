@@ -57,10 +57,12 @@ export default {
     .icon
       font-size $font-size-large-x
       color $color-background
+      &.icon-dismiss
+        font-size $font-size-medium-x
     .box
       flex 1
       line-height 16px
-      color $color-text
+      color $color-background
       background $color-highlight-background
       outline none
       font-size $font-size-medium

@@ -127,10 +127,10 @@ export default {
           display flex
           flex-direction column
           justify-content center
-          color $color-text-d
+          color $color-text-l
           font-size $font-size-small
           padding 0 20px
-          background $color-highlight-background
+          background $color-background-l
           overflow hidden
           .item-rank-list
             no-wrap()

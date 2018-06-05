@@ -12,17 +12,15 @@
           </span>
         </div>
         <scroll class="list-content" :data='playList' ref="scroll">
-          <ul class="list">
-            <transition-group name="list">
-              <li ref='listItem' class="list-item" v-for="(item,index) in sequenceList" :key="item.id" @click='selectItem(item, index)'>
-                <i class="current" :class="getCurrCls(item)"></i>
-                <span class="item-name">{{item.name}}</span>
-                <span class="icon" @click.stop="deleteItem(item)">
-                  <i class="icon-delete"></i>
-                </span>
-              </li>
-            </transition-group>
-          </ul>
+          <transition-group name="list" ref='list' class="list" tag="ul">
+            <li class="list-item" v-for="(item,index) in sequenceList" :key="item.id" @click='selectItem(item, index)'>
+              <i class="current" :class="getCurrCls(item)"></i>
+              <span class="item-name">{{item.name}}</span>
+              <span class="icon" @click.stop="deleteItem(item)">
+                <i class="icon-delete"></i>
+              </span>
+            </li>
+          </transition-group>
         </scroll>
         <div class="list-operate">
           <div class="addsong">
@@ -117,7 +115,7 @@ export default {
       const index = this.sequenceList.findIndex((item) => {
         return item.id === current.id
       })
-      this.$refs.scroll.scrollToElement(this.$refs.listItem[index], 500)
+      this.$refs.scroll.scrollToElement(this.$refs.list.$el.children[index], 500)
     },
     ...mapMutations({
       setCurrIndex: 'SET_CURR_INDEX',
@@ -156,7 +154,7 @@ export default {
         transform translate3d(0, 100%, 0)
     .list-wrapper
       width 100%
-      background $color-highlight-background
+      background $color-background-player-d
       position absolute
       bottom 0
       left 0
@@ -171,7 +169,7 @@ export default {
           margin-right 10px
         .title
           font-size $font-size-medium
-          color $color-text-l
+          color $color-text-d
           flex 1
         .clear
           color $color-text-d
@@ -207,19 +205,20 @@ export default {
           width 150px
           box-sizing border-box
           border-radius 100px
-          border 1px solid $color-text-l
+          border 1px solid $color-background
           padding 8px 16px
           display flex
           align-items center
           .icon
             font-size $font-size-small-s
+            color $color-background
             margin-right 5px
           .text
-            color $color-text-l
+            color $color-background
             font-size $font-size-small
       .list-close
         line-height 50px
-        color $color-text-l
+        color $color-background-ll
         font-size $font-size-large
         text-align center
         background $color-background-d

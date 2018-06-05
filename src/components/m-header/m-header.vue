@@ -1,7 +1,6 @@
 <template>
   <div class="m-header">
-    <div class="icon"></div>
-    <h1 class="text">Chicken Music</h1>
+    <h1 class="text">MusicPlayer</h1>
   </div>
 </template>
 
@@ -16,8 +15,9 @@ export default {
   .m-header
     height 44px
     text-align center
-    color $color-theme
+    color $color-background
     font-size 0
+    background $color-theme
     .icon
       bg-image('logo')
       background-size 30px 32px

@@ -2,7 +2,7 @@
   <div class="search-hot">
     <h1 class="title">热门搜索</h1>
     <ul class="hot-key">
-      <li class="key" v-for="(item, index) in keys" :key="index" @click='clickKey(item.first)'>
+      <li class="key" v-for="(item, index) in keys" :key="index" @click='clickKey(item.first)' :class="{'first': index === 0}">
         <span>{{item.first}}</span>
       </li>
     </ul>
@@ -37,9 +37,12 @@ export default {
       .key
         padding 8px
         font-size $font-size-medium
-        background $color-highlight-background
+        background $color-background-d
         border-radius 6px
         margin-right 10px
         margin-bottom 10px
-        color $color-text-d
+        color $color-text-l
+        &.first
+          background $color-highlight-background
+          color $color-background
 </style>

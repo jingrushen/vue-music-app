@@ -182,8 +182,8 @@ export default {
       line-height 30px
       padding-left 20px
       font-size $font-size-small
-      color $color-text-l
-      background #333
+      color $color-theme
+      background $color-background-ll
     .list-group-item
       display flex
       line-height 50px
@@ -222,8 +222,8 @@ export default {
     width 100%
     padding-left 20px
     font-size $font-size-small
-    color $color-text-l
-    background #333
+    color $color-theme
+    background $color-background-ll
   .loading
     position absolute
     width 100%

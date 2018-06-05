@@ -123,7 +123,7 @@ export default {
     .suggest
       .best-search
         p
-          color $color-text-d
+          color $color-text-ll
           font-size $font-size-medium
           padding 10px 0
         .search-singer
@@ -158,7 +158,7 @@ export default {
               font-size $font-size-medium
               no-wrap()
             .info-singer
-              color $color-text-d
+              color $color-text-l
               font-size $font-size-small
       .result-list
         .item
@@ -172,7 +172,7 @@ export default {
             font-size $font-size-medium-x
             no-wrap()
           .item-info
-            color $color-text-d
+            color $color-text-l
             font-size $font-size-small
             no-wrap()
   .no-search-result
@@ -191,6 +191,6 @@ export default {
     top 0
     bottom 0
     background $color-background
-  .border-bottom
-    border-bottom 1px solid $color-background-d
+  .border-bottom:before
+    border-color $color-background-d
 </style>

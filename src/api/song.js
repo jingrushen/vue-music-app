@@ -19,6 +19,17 @@ export function getSongUrl (id) {
   return axios.get(url)
 }
 
+export function getSongUrl2 (id) {
+  let url = 'https://api.imjad.cn/cloudmusic'
+  const data = {
+    type: 'song',
+    id,
+    br: 128000
+  }
+  url += (url.indexOf('?') < 0 ? '?' : '&') + param(data)
+  return axios.get(url)
+}
+
 export function getSongLyric (id) {
   let url = `${HOST}/lyric?id=${id}`
 

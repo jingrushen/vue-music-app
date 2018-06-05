@@ -93,6 +93,6 @@ export default {
         width 16px
         height 16px
         border-radius 50%
-        border 3px solid $color-text
+        border 3px solid $color-text-d
         background $color-theme
 </style>

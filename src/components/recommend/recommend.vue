@@ -17,14 +17,13 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <loading v-show="!hasDiscList"></loading>
-          <ul>
+          <ul class="list-wrapper">
             <li class="list-item" v-for="item in discList" :key="item.id" @click='selectItem(item)'>
               <div class="item-icon">
                 <img class='item-img' v-lazy="item.picUrl">
               </div>
               <div class="item-text">
                 <h2 class="text-title">{{item.name}}</h2>
-                <p class="text-desc">{{item.copywriter}}</p>
               </div>
             </li>
           </ul>
@@ -115,7 +114,6 @@ export default {
     width 100%
     top 88px
     bottom 0
-    overflow hidden
     .recommend-content
       width 100%
       height 100%
@@ -131,24 +129,20 @@ export default {
           text-align center
           color $color-theme
           font-size $font-size-medium
-        .list-item
+        .list-wrapper
           display flex
-          padding 0 20px 20px
-          .item-icon
-            margin-right 20px
-            .item-img
-              width 60px
-              height 60px
-          .item-text
-            display flex
-            flex-direction column
-            justify-content center
-            flex 1
-            line-height 20px
-            font-size $font-size-medium
-            .text-title
-              color $color-text
-              margin-bottom 10px
-            .text-desc
-              color $color-text-ll
+          flex-wrap wrap
+          justify-content space-around
+          .list-item
+            width 32%
+            margin-bottom 5px
+            .item-icon
+              width 100%
+              .item-img
+                width 100%
+            .item-text
+              line-height 1.5
+              .text-title
+                font-size $font-size-small
+                color $color-text
 </style>

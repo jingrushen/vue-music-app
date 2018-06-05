@@ -5,6 +5,7 @@ import router from './router'
 import store from './store/index'
 
 import 'common/stylus/index.styl'
+import 'common/stylus/border.css'
 import FastClick from 'fastclick'
 import VueLazyload from 'vue-lazyload'
 FastClick.attach(document.body)

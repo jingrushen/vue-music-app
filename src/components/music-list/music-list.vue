@@ -200,9 +200,9 @@ export default {
           margin 0 auto
           text-align center
           padding 7px 0
-          border 1px solid $color-theme
+          border 1px solid $color-background
           border-radius 100px
-          color $color-theme
+          color $color-background
           box-sizing border-box
           font-size 0
           .icon-play

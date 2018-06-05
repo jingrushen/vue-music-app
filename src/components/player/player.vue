@@ -108,7 +108,7 @@
 
 <script>
 import { mapGetters, mapMutations } from 'vuex'
-import { getSongUrl, getSongLyric } from 'api/song'
+import { getSongUrl, getSongUrl2, getSongLyric } from 'api/song'
 import { CODE } from 'api/config'
 import { playMode } from 'common/js/config'
 import { lyricParse } from 'common/js/util'
@@ -214,9 +214,7 @@ export default {
       this.songReady = false
     },
     next () {
-      console.log('next')
       if (!this.songReady) {
-        console.log('duile')
         return
       }
       let index = this.currentIndex + 1
@@ -235,8 +233,13 @@ export default {
           let url = res.data.data[0].url
           console.log(url)
           if (!url) {
-            console.log('next')
-            this.next()
+            getSongUrl2(id).then((res) => {
+              if (res.data.code === 200) {
+                const data = res.data.data[0]
+                this.currentSong.url = data.url
+                this.audioPlay()
+              }
+            })
           } else {
             this.currentSong.url = url
             this.audioPlay()
@@ -548,7 +551,7 @@ export default {
       bottom 0
       width 100%
       height 60px
-      background $color-highlight-background
+      background $color-background-player
       z-index 200
       display flex
       align-items center
@@ -575,7 +578,7 @@ export default {
         no-wrap()
         .song-name
           font-size $font-size-medium
-          color $color-text
+          color $color-background
         .song-desc
           font-size $font-size-small
           color $color-text-d

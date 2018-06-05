@@ -53,6 +53,6 @@ export default {
           color $color-text
           no-wrap()
         .item-desc
-          color $color-text-d
+          color $color-text-ll
           no-wrap()
 </style>
