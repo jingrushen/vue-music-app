@@ -42,6 +42,7 @@ export default {
       let diff = e.touches[0].pageX - this.touch.initX
       let offSetWidth = Math.max(Math.min(diff + this.touch.left, (this.$refs.bar.clientWidth - BTN_WIDTH)), 0)
       this._setOffsetW(offSetWidth)
+      this._calPercent(offSetWidth)
     },
     btnTouchEnd () {
       this.touch.move = false
@@ -60,7 +61,7 @@ export default {
       this._setPercent(p)
     },
     _setPercent (p) {
-      this.$emit('setPercent', p)
+      this.$emit('setPercent', p, this.touch.move)
     },
     _setOffsetW (w) {
       this.$refs.progress.style.width = w + 'px'

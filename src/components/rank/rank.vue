@@ -1,19 +1,24 @@
 <template>
   <div class="rank" ref="rank">
-    <scroll class="toplist" :data='rankList' ref="scroll">
-      <ul>
-        <li class="list-item" v-for="item in rankList" :key='item.id'  @click='selectItem(item)'>
-          <div class="item-img">
-            <img v-lazy="item.bgimage" alt="">
-          </div>
-          <ul class="item-rank">
-            <li class="item-rank-list" v-for="(song, index) in item.songs" :key="index" v-if="index < 3">
-              <span>{{index + 1}}.</span>
-              <span>{{song.name}}</span>
-            </li>
-          </ul>
-        </li>
-      </ul>
+    <scroll class="toplist" :data='rankList' ref="scroll" @scrollToStart='updateData' :pullDown='pullDown'>
+      <div>
+        <div class="loading-container" ref="loading">
+          <loading></loading>
+        </div>
+        <ul>
+          <li class="list-item" v-for="item in rankList" :key='item.id'  @click='selectItem(item)'>
+            <div class="item-img">
+              <img v-lazy="item.bgimage">
+            </div>
+            <ul class="item-rank">
+              <li class="item-rank-list" v-for="(song, index) in item.songs" :key="index" v-if="index < 3">
+                <span>{{index + 1}}.</span>
+                <span>{{song.name}}</span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </scroll>
     <router-view></router-view>
   </div>
@@ -24,31 +29,36 @@ import { getRankList } from 'api/rank'
 import { CODE } from 'api/config'
 import Disc from 'base/class/Disc'
 import Scroll from 'base/scroll/scroll'
+import Loading from 'base/loading/loading'
 import { mapMutations } from 'vuex'
 import { playlistMixin } from 'common/js/mixin'
 
 const LIST_NUM = 8
+const MAX_LIST = 23
+
 export default {
   mixins: [playlistMixin],
   data () {
     return {
-      rankList: []
+      rankList: [],
+      pullDown: true,
+      i: 0
     }
   },
   created () {
     this._getRankList()
   },
   methods: {
-    _getRankList () {
-      let i = 0
-      while (i !== LIST_NUM) {
-        getRankList(i).then((res) => {
+    _getRankList (callback) {
+      while (this.i !== LIST_NUM) {
+        getRankList(this.i).then((res) => {
           if (res.data.code === CODE) {
             const data = res.data.playlist
             this.rankList.push(new Disc(data))
           }
+          callback && callback()
         })
-        i++
+        this.i = (this.i + 1 > MAX_LIST ? 0 : ++this.i)
       }
     },
     selectItem (item) {
@@ -62,12 +72,24 @@ export default {
       this.$refs.rank.style.bottom = bottom
       this.$refs.scroll.refresh()
     },
+    updateData () {
+      // this.rankList = []
+      this.$refs.loading.style.transform = `translateY(0px)`
+      this.$refs.loading.style.height = '45px'
+      // this._getRankList(() => {
+      //   if (this.rankList.length === LIST_NUM) {
+      //     this.$refs.loading.style.height = ''
+      //     this.$refs.loading.style.transform = ''
+      //   }
+      // })
+    },
     ...mapMutations({
       setDisc: 'SET_DISC'
     })
   },
   components: {
-    Scroll
+    Scroll,
+    Loading
   }
 }
 </script>
@@ -84,6 +106,10 @@ export default {
       width 100%
       height 100%
       overflow hidden
+      .loading-container
+        width 100%
+        transform translateY(-45px)
+        height 0
       .list-item
         width 90%
         margin 0 auto

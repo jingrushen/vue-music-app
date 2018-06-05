@@ -1,5 +1,11 @@
 <template>
-  <scroll class="search-suggest" :data='songs' @scrollToEnd='searchMore' :pullup='pullup'>
+  <scroll class="search-suggest"
+    :data='songs'
+    :pullup='pullup'
+    :beforeScroll='beforeScroll'
+    @scrollToEnd='searchMore'
+    @beforeScroll='blurInput'
+  >
     <div class="suggest">
       <div class="best-search" v-if="hasSinger || hasPlaylist">
         <p>最佳匹配</p>
@@ -65,7 +71,8 @@ export default {
   },
   data () {
     return {
-      pullup: true
+      pullup: true,
+      beforeScroll: true
     }
   },
   computed: {
@@ -94,6 +101,9 @@ export default {
     },
     searchMore () {
       this.$emit('searchMore')
+    },
+    blurInput () {
+      this.$emit('inputBlur')
     }
   },
   components: {

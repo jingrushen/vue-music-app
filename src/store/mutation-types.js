@@ -13,3 +13,5 @@ export const SET_PLAY_MODE = 'SET_PLAY_MODE'
 export const SET_CURR_INDEX = 'SET_CURR_INDEX'
 
 export const SET_DISC = 'SET_DISC'
+
+export const SET_SAVE_HISTOEY = 'SET_SAVE_HISTOEY'

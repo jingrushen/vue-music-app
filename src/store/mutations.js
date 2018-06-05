@@ -24,6 +24,9 @@ const mutations = {
   },
   [types.SET_DISC] (state, item) {
     state.disc = item
+  },
+  [types.SET_SAVE_HISTOEY] (state, data) {
+    state.saveHistory = data
   }
 }
 

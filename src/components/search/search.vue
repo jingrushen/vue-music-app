@@ -3,9 +3,24 @@
     <div class="search-box-wrapper">
       <search-box @changeQuery='changeQuery' ref="searchbox"></search-box>
     </div>
-    <div class="search-hot-wrapper" v-show="!hasQuery">
-      <search-hot v-if="hasHotKeys" :keys='hotKeys' @clickHotkey='handleHotKey'></search-hot>
-    </div>
+    <scroll class="scroll-wrapper">
+      <div>
+        <div class="search-hot-wrapper" v-show="!hasQuery">
+          <search-hot v-if="hasHotKeys" :keys='hotKeys' @clickHotkey='handleHotKey'></search-hot>
+        </div>
+        <div class="search-list-wrapper" v-show="hasHistory && !hasQuery">
+          <div class="text">
+            <span class="title">搜索历史</span>
+            <i class="icon-clear icon" @click='clear'></i>
+          </div>
+          <search-list
+            :searchData='saveHistory'
+            @deleteHistory='deleteSearchHistory'
+            @selectHistory='changeQuery'
+          ></search-list>
+        </div>
+      </div>
+    </scroll>
     <div class="search-suggest-wrapper" v-if="hasQuery" ref="suggestwrapper">
       <search-suggest
         :songs='songsRet'
@@ -17,8 +32,10 @@
         @selectPlaylist='changePlaylist'
         @selectSong='changeSong'
         @searchMore='searchMore'
+        @inputBlur='blurInput'
       ></search-suggest>
     </div>
+    <comfirm ref="comfirm" title='是否清空所有搜索数据' @clearAll='clearSearchHistory'></comfirm>
     <router-view></router-view>
   </div>
 </template>
@@ -27,11 +44,14 @@
 import SearchBox from 'base/searchbox/searchbox'
 import SearchHot from 'base/searchhot/searchhot'
 import SearchSuggest from 'base/suggest/suggest'
+import SearchList from 'base/searchlist/searchlist'
+import Scroll from 'base/scroll/scroll'
+import Comfirm from 'base/comfirm/comfirm'
 import { getHotKeys, getSongsResult, getPlaylistSingerResult } from 'api/search'
 import { CODE } from 'api/config'
 import Singer from 'base/class/Singer'
 import Disc from 'base/class/Disc'
-import { mapMutations, mapActions } from 'vuex'
+import { mapMutations, mapActions, mapGetters } from 'vuex'
 import { getSongDetail } from 'api/song'
 import { createSong } from 'base/class/Song'
 import { playlistMixin } from 'common/js/mixin'
@@ -60,7 +80,13 @@ export default {
     },
     hasQuery () {
       return !!this.query
-    }
+    },
+    hasHistory () {
+      return this.saveHistory.length
+    },
+    ...mapGetters([
+      'saveHistory'
+    ])
   },
   created () {
     this._getHotKeys()
@@ -76,11 +102,11 @@ export default {
     },
     changeQuery (val) {
       this.query = val
+      this.handleHotKey(val)
       clearTimeout(this.timer)
       this.isLoading = true
       if (val) {
         this.timer = setTimeout(() => {
-          console.log(val)
           this._getSongsResult(val)
           this._getPlaylistSingerResult(val)
           this.isLoading = true
@@ -101,7 +127,7 @@ export default {
         this.isLoading = false
         this.songsRet = []
         this.songCount = res.data.result.songCount
-        if (res.data.code === CODE && this.songCount) {
+        if (res.data.code === CODE && this.songCount && res.data.result.songs) {
           const data = res.data.result.songs
           data.forEach((item) => {
             this.songsRet.push({
@@ -113,6 +139,7 @@ export default {
             })
           })
         }
+        this.hasMore = false
       })
     },
     _getPlaylistSingerResult (val) {
@@ -157,35 +184,31 @@ export default {
       })
     },
     _checkMore () {
-      if (this.offset > this.songCount) {
-        this.hasMore = false
-      }
+      this.hasMore = !(this.offset > this.songCount)
     },
     changeSinger (singer) {
       this.$router.push({
         path: `/search/singer/${singer.id}`
       })
       this.setSinger(singer)
+      this.saveSearchHistory(this.query)
     },
     changePlaylist (playlist) {
       this.$router.push({
         path: `/search/playlist/${playlist.id}`
       })
       this.setDisc(playlist)
+      this.saveSearchHistory(this.query)
     },
     changeSong (song) {
       getSongDetail(song.id).then((res) => {
         if (res.data.code === CODE) {
-          let list = []
           const data = res.data.songs
-          data.forEach((item) => {
-            list.push(createSong(item))
-          })
-          this.selectSearch({
-            list
-          })
+          const song = createSong(data[0])
+          this.insertSong(song)
         }
       })
+      this.saveSearchHistory(this.query)
     },
     handlePlaylist (playlist) {
       const bottom = playlist.length > 0 ? '60px' : ''
@@ -193,23 +216,36 @@ export default {
         this.$refs.suggestwrapper.style.bottom = bottom
       }
     },
+    blurInput () {
+      this.$refs.searchbox.blurInput()
+    },
+    clear () {
+      this.$refs.comfirm.toggleDisplay()
+    },
     ...mapMutations({
       setSinger: 'SET_SINGER',
       setDisc: 'SET_DISC'
     }),
     ...mapActions([
-      'selectSearch'
+      'insertSong',
+      'saveSearchHistory',
+      'deleteSearchHistory',
+      'clearSearchHistory'
     ])
   },
   components: {
     SearchBox,
     SearchHot,
-    SearchSuggest
+    SearchSuggest,
+    SearchList,
+    Comfirm,
+    Scroll
   }
 }
 </script>
 
 <style lang='stylus' scoped>
+@import '~common/stylus/variable'
   .search
     .search-box-wrapper
       margin 20px
@@ -220,4 +256,13 @@ export default {
       width 100%
       top 167px
       bottom 0
+    .search-list-wrapper
+      margin 20px
+      .text
+        color $color-text-l
+        font-size $font-size-medium
+        display flex
+        margin-bottom 10px
+        .title
+          flex 1
 </style>

@@ -20,6 +20,9 @@
                   <img :src="currentSong.img" alt="" class="image">
                 </div>
               </div>
+              <div class="lyric-wrapper">
+                <div class="play-lyric">{{getCurrLyricTxt()}}</div>
+              </div>
             </div>
             <scroll class="middle-r" v-else
               key="right"
@@ -66,7 +69,7 @@
               <i class="icon-next" @click='next'></i>
             </div>
             <div class="icon i-right">
-              <i class="icon icon-not-favorite"></i>
+              <i class="icon-mini icon-playlist" @click.stop='showPlaylist'></i>
             </div>
           </div>
         </div>
@@ -89,10 +92,11 @@
           </progress-circle>
         </div>
         <div class="control">
-          <i class="icon-mini icon-playlist"></i>
+          <i class="icon-mini icon-playlist" @click.stop='showPlaylist'></i>
         </div>
       </div>
     </transition>
+    <play-list ref="playlist"></play-list>
     <audio ref="audio"
       @canplay='ready'
       @error='error'
@@ -107,12 +111,15 @@ import { mapGetters, mapMutations } from 'vuex'
 import { getSongUrl, getSongLyric } from 'api/song'
 import { CODE } from 'api/config'
 import { playMode } from 'common/js/config'
-import { shuffle, lyricParse } from 'common/js/util'
+import { lyricParse } from 'common/js/util'
 import ProgressBar from 'base/progressbar/progressbar'
 import ProgressCircle from 'base/progresscircle/progresscircle'
 import Scroll from 'base/scroll/scroll'
+import PlayList from 'components/playlist/playlist'
+import { playerMixin } from 'common/js/mixin'
 
 export default {
+  mixins: [playerMixin],
   data () {
     return {
       songReady: false,
@@ -125,7 +132,8 @@ export default {
       isMove: false,
       timer: null,
       isFirstPlayed: false,
-      isStartLyric: false
+      isStartLyric: false,
+      currLyricTxt: ''
     }
   },
   computed: {
@@ -153,15 +161,15 @@ export default {
     percent () {
       return this.currentTime / (this.currentSong.interval)
     },
-    iconMode () {
-      return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
-    },
     hasLyirc () {
       return !!this.currentLyric.length
     }
   },
   watch: {
     currentSong (newsong, oldsong) {
+      if (!newsong.id) {
+        return
+      }
       if (!newsong && newsong.url) {
         return
       }
@@ -206,7 +214,9 @@ export default {
       this.songReady = false
     },
     next () {
+      console.log('next')
       if (!this.songReady) {
+        console.log('duile')
         return
       }
       let index = this.currentIndex + 1
@@ -224,7 +234,8 @@ export default {
         if (res.data.code === CODE) {
           let url = res.data.data[0].url
           console.log(url)
-          if (url === null) {
+          if (!url) {
+            console.log('next')
             this.next()
           } else {
             this.currentSong.url = url
@@ -266,12 +277,12 @@ export default {
       this.songReady = true
     },
     error () {
-
+      this.songReady = true
     },
     updateTime (e) {
       let time = e.target.currentTime
       this.currentTime = time
-      this.getCurrentLyric(time)
+      this.getCurrentLyric(this.currentTime)
     },
     format (time) {
       let interval = time | 0
@@ -285,27 +296,12 @@ export default {
       }
       return num
     },
-    setPercent (p) {
+    setPercent (p, isMove) {
       const currentTime = (this.currentSong.interval) * p
-      this.currentTime = this.$refs.audio.currentTime = currentTime
-    },
-    changeMode () {
-      let mode = (this.mode + 1) % 3
-      let list = null
-      this.setMode(mode)
-      if (mode === playMode.random) {
-        list = shuffle(this.sequenceList)
-      } else {
-        list = this.sequenceList
+      this.currentTime = currentTime
+      if (!isMove) {
+        this.$refs.audio.currentTime = this.currentTime
       }
-      this.resetCurrentIndex(list)
-      this.setList(list)
-    },
-    resetCurrentIndex (list) {
-      let index = list.findIndex((item) => {
-        return item.id === this.currentSong.id
-      })
-      this.setCurrIndex(index)
     },
     end () {
       if (this.mode === playMode.loop) {
@@ -316,13 +312,17 @@ export default {
       }
     },
     getCurrentLyric (time) {
+      if (time === 0) {
+        this.currLyric = -1
+        return
+      }
       let t = time * 1000
       let len = this.currentLyric.length
       for (let i = 0; i < len - 1; i++) {
         if (this.currentLyric[i].time < t && t < this.currentLyric[i + 1].time) {
           this.currLyric = i
           if (this.$refs.lyricLines) {
-            if (!this.isStartLyric) {
+            if (!this.isStartLyric && this.$refs.lyricScroll) {
               this.$refs.lyricScroll.scrollTo(0, 0)
               this.isStartLyric = true
               return
@@ -352,21 +352,33 @@ export default {
       }, 2000)
     },
     firstplay () {
-      this.setPlayState(true)
       this.$refs.audio.play()
+    },
+    showPlaylist () {
+      this.$refs.playlist.show()
+    },
+    getCurrLyricTxt () {
+      if (this.currentLyric.length && this.currLyric >= 0) {
+        if (this.currentLyric[this.currLyric].txt) {
+          return this.currentLyric[this.currLyric].txt
+        } else {
+          return ''
+        }
+      } else {
+        return ''
+      }
     },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
       setPlayState: 'SET_PLAYING_STATE',
-      setCurrIndex: 'SET_CURR_INDEX',
-      setMode: 'SET_PLAY_MODE',
-      setList: 'SET_PLAYLIST'
+      setCurrIndex: 'SET_CURR_INDEX'
     })
   },
   components: {
     ProgressBar,
     ProgressCircle,
-    Scroll
+    Scroll,
+    PlayList
   }
 }
 </script>
@@ -432,10 +444,13 @@ export default {
           height 0
           .cd-wrapper
             width 80%
+            height 100%
             position absolute
             left 10%
             top 0
             .cd
+              width 100%
+              height 100%
               &.play
                 animation rotate 50s linear infinite
               &.pause
@@ -446,6 +461,15 @@ export default {
                 box-sizing border-box
                 border-radius 50%
                 border 10px solid hsla(0,0%,100%,.1)
+          .lyric-wrapper
+            width 80%
+            text-align center
+            margin 0 auto
+            color $color-text-l
+            font-size $font-size-medium-x
+            position absolute
+            bottom -50px
+            left 10%
         .middle-r
           position absolute
           left 0

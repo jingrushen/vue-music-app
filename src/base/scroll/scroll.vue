@@ -28,9 +28,17 @@ export default {
       type: Boolean,
       default: false
     },
+    pullDown: {
+      type: Boolean,
+      default: false
+    },
     refreshDelay: {
       type: Number,
       default: 20
+    },
+    beforeScroll: {
+      type: Boolean,
+      default: false
     }
   },
   mounted () {
@@ -58,6 +66,18 @@ export default {
           if (this.scroll.y <= (this.scroll.maxScrollY + 50)) {
             this.$emit('scrollToEnd')
           }
+        })
+      }
+      if (this.pullDown) {
+        this.scroll.on('scroll', () => {
+          if (this.scroll.y >= 100) {
+            this.$emit('scrollToStart')
+          }
+        })
+      }
+      if (this.beforeScroll) {
+        this.scroll.on('beforeScrollStart', () => {
+          this.$emit('beforeScroll')
         })
       }
     },
