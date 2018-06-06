@@ -23,8 +23,15 @@
       </div>
       <ul class="result-list" v-if="hasSongs">
         <li class="item border-bottom" v-for="(item, index) in songs" :key="index" @click='selectSong(item)'>
-          <p class="item-name">{{item.name}}</p>
-          <p class="item-info">{{item.singer}}</p>
+          <div class="info-wrapper">
+            <span class="item-name">{{item.name}}</span>
+            <span class="item-info">{{item.singer}}</span>
+          </div>
+          <div class="add-icon" @click.stop='selectAdd(item, index)'>
+            <span class="icon-wrapper">
+              <i class="icon-add"></i>
+            </span>
+          </div>
         </li>
       </ul>
       <loading v-show="hasMore"></loading>
@@ -104,6 +111,9 @@ export default {
     },
     blurInput () {
       this.$emit('inputBlur')
+    },
+    selectAdd (song) {
+      this.$emit('selectAdd', song)
     }
   },
   components: {
@@ -163,18 +173,28 @@ export default {
       .result-list
         .item
           display flex
-          flex-direction column
-          justify-content center
           padding 10px 0
           line-height 1.3
-          .item-name
-            color $color-text-ll
-            font-size $font-size-medium-x
-            no-wrap()
-          .item-info
-            color $color-text-l
-            font-size $font-size-small
-            no-wrap()
+          .info-wrapper
+            flex 1
+            display flex
+            flex-direction column
+            justify-content center
+            .item-name
+              color $color-text-ll
+              font-size $font-size-medium-x
+              no-wrap()
+            .item-info
+              color $color-text-l
+              font-size $font-size-small
+              no-wrap()
+          .add-icon
+            display inline-block
+            width 30px
+            line-height 30px
+            text-align center
+            .icon-wrapper
+              color $color-highlight-background
   .no-search-result
     width 100%
     height 100%

@@ -25,7 +25,7 @@
       v-show="hasHotSongs"
     >
       <div class="scroll-wrapper" v-show="hasHotSongs">
-        <song-list :hot-songs='hotSongs' @select='selectSong'></song-list>
+        <song-list :hot-songs='hotSongs' @select='selectSong' @selectAdd='addSong'></song-list>
       </div>
       <div class="loading-container" v-show='!hasHotSongs'>
         <loading></loading>
@@ -39,12 +39,12 @@ import Loading from 'base/loading/loading'
 import SongList from 'base/song-list/songlist'
 import Scroll from 'base/scroll/scroll'
 import { mapActions } from 'vuex'
-import { playlistMixin } from 'common/js/mixin'
+import { playlistMixin, addsongMixin } from 'common/js/mixin'
 
 const TITLE_H = 40
 
 export default {
-  mixins: [playlistMixin],
+  mixins: [playlistMixin, addsongMixin],
   data () {
     return {
       bgStyle: '',

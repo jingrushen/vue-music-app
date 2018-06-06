@@ -10,6 +10,11 @@
           <h2 class="item-name">{{song.name}}</h2>
           <p class="item-desc">{{mergeNameSinger(song)}}</p>
         </div>
+        <div class="add-icon" @click.stop='selectAdd(song, index)'>
+          <span class="icon-wrapper">
+            <i class="icon-add"></i>
+          </span>
+        </div>
       </li>
     </ul>
   </div>
@@ -28,6 +33,9 @@ export default {
     },
     selectSong (song, index) {
       this.$emit('select', song, index)
+    },
+    selectAdd (song, index) {
+      this.$emit('selectAdd', song, index)
     }
   }
 }
@@ -49,10 +57,17 @@ export default {
         justify-content space-around
         line-height 25px
         overflow hidden
+        flex 1
         .item-name
           color $color-text
           no-wrap()
         .item-desc
           color $color-text-ll
           no-wrap()
+      .add-icon
+        width 30px
+        line-height 30px
+        text-align center
+        .icon-wrapper
+          color $color-highlight-background
 </style>

@@ -1,4 +1,4 @@
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import { shuffle } from 'common/js/util'
 import { playMode } from 'common/js/config'
 
@@ -59,5 +59,16 @@ export const playerMixin = {
       setMode: 'SET_PLAY_MODE',
       setList: 'SET_PLAYLIST'
     })
+  }
+}
+
+export const addsongMixin = {
+  methods: {
+    addSong (song) {
+      this.addPlaylistSong(song)
+    },
+    ...mapActions([
+      'addPlaylistSong'
+    ])
   }
 }

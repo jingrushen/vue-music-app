@@ -33,6 +33,7 @@
         @selectSong='changeSong'
         @searchMore='searchMore'
         @inputBlur='blurInput'
+        @selectAdd='addSong'
       ></search-suggest>
     </div>
     <comfirm ref="comfirm" title='是否清空所有搜索数据' @clearAll='clearSearchHistory'></comfirm>
@@ -54,12 +55,12 @@ import Disc from 'base/class/Disc'
 import { mapMutations, mapActions, mapGetters } from 'vuex'
 import { getSongDetail } from 'api/song'
 import { createSong } from 'base/class/Song'
-import { playlistMixin } from 'common/js/mixin'
+import { playlistMixin, addsongMixin } from 'common/js/mixin'
 
 const LIMIT = 30
 
 export default {
-  mixins: [playlistMixin],
+  mixins: [playlistMixin, addsongMixin],
   data () {
     return {
       hotKeys: [],

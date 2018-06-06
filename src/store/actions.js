@@ -107,6 +107,47 @@ const actions = {
     if (!playlist.length) {
       commit(types.SET_PLAYING_STATE, false)
     }
+  },
+  addPlaylistSong ({commit, state}, song) {
+    let currIndex = state.currentIndex
+    let playlist = state.playList.slice()
+    let sequencelist = state.sequenceList.slice()
+
+    let currsong = playlist[currIndex]
+
+    let index = findIndex(playlist, song)
+
+    playlist.splice(currIndex + 1, 0, song)
+
+    let currSindex = (currsong ? findIndex(sequencelist, currsong) : -1)
+    let Sindex = findIndex(sequencelist, song)
+
+    sequencelist.splice(currSindex + 1, 0, song)
+    if (currIndex === -1) {
+      currIndex++
+      commit(types.SET_PLAYING_STATE, true)
+      commit(types.SET_FULL_SCREEN, true)
+    } else {
+      if (index > -1) {
+        if (index > currIndex) {
+          playlist.splice(++index, 1)
+        } else {
+          playlist.splice(index, 1)
+          currIndex--
+        }
+      }
+
+      if (Sindex > -1) {
+        if (Sindex > currSindex) {
+          sequencelist.splice(++Sindex, 1)
+        } else {
+          sequencelist.splice(Sindex, 1)
+        }
+      }
+    }
+    commit(types.SET_CURR_INDEX, currIndex)
+    commit(types.SET_PLAYLIST, playlist)
+    commit(types.SET_SEQUENCE_LIST, sequencelist)
   }
 }
 
