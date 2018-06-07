@@ -98,7 +98,7 @@
     </transition>
     <play-list ref="playlist"></play-list>
     <audio ref="audio"
-      @canplay='ready'
+      @loadedmetadata='ready'
       @error='error'
       @timeupdate="updateTime"
       @ended="end"
@@ -214,9 +214,11 @@ export default {
       this.songReady = false
     },
     next () {
+      console.log(this.songReady)
       if (!this.songReady) {
         return
       }
+      console.log(this.currentSong.name)
       let index = this.currentIndex + 1
       if (index >= this.playList.length) {
         index = 0
@@ -231,7 +233,6 @@ export default {
       getSongUrl(id).then((res) => {
         if (res.data.code === CODE) {
           let url = res.data.data[0].url
-          console.log(url)
           if (!url) {
             getSongUrl2(id).then((res) => {
               if (res.data.code === 200) {
